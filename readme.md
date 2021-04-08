@@ -25,16 +25,21 @@ from numWorkshop import Script, Workshop
 
 workshop = Workshop("email", "password")
 
-toaster = Script(name="name", description="description", content="print('hello-world')", public=True)
+toaster = Script(name="name",
+                 description="description",
+                 content="print('hello-world')",
+                 public=True)
+
 workshop.create_script(toaster)
 toaster.content = "print('nsi.xyz')"
+
 # Since we use the script name to get acess and edit your script, your should use the name parameter
 # of the edit_script method, this will update the script at the end of the process and not break script
 # Other parameter are updated throught Script object...
 workshop.edit_script(toaster, name="namev2")
 workshop.delete_script(toaster)
 
-script = workshop.get_script(https://workshop.numworks.com/python/thierry-barry/annuite_constante)  # This return a script object.
+script = workshop.get_script("https://workshop.numworks.com/python/thierry-barry/annuite_constante")  # This return a script object.
 print(script)
 ```
 
