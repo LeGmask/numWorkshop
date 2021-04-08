@@ -48,8 +48,9 @@ class Workshop:
         }
 
         r = self.session.post(self.get_url("/users/sign_in"), data=payload)
-        soup = BeautifulSoup(r.text, "html.parser").find(["ul", "li", "a"],
-                             class_="dropdown-menu animated-dropdown-sm")
+        soup = BeautifulSoup(r.text, "html.parser").find(
+                                ["ul", "li", "a"],
+                                class_="dropdown-menu animated-dropdown-sm")
         self.python = soup.find_all("a")[1].get("href")
 
     def create_script(self, script: Script) -> NoReturn:
@@ -81,7 +82,8 @@ class Workshop:
             "authenticity_token": authenticity_token,
             "commit": "Sauvegarder",
             "script[description]": script.description,
-            "script[name]": f"{name.lower()}.py" or f"{script.name.lower()}.py",
+            "script[name]": (f"{name.lower()}.py"
+                             or f"{script.name.lower()}.py"),
             "script[public]": int(script.public),
             "script[text_area_content]": script.content,
         }
@@ -98,7 +100,8 @@ class Workshop:
 
         soup = BeautifulSoup(r.text, "html.parser")
         authenticity_token = soup.find("meta",
-                                       attrs={"name": "csrf-token"}).get("content")
+                                       attrs={"name": "csrf-token"}).get(
+                                           "content")
 
         payload = {
             "_method": "delete",
