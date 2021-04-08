@@ -11,5 +11,5 @@ jobs:
       uses: quentinguidee/pep8-action@v1
       id: run_pep8
       with:
-        arguments: '--max-line-length=79'
+        arguments: '--max-line-length=180'
       continue-on-error: false
