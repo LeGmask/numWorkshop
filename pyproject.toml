@@ -1,9 +1,19 @@
 [tool.poetry]
-name = "numworks-workshop.py"
-version = "0.1.0"
-description = "Numworks workshop scraping tool"
-authors = ["Evann DREUMONT <53308142+LeGmask@users.noreply.github.com>"]
+name = "numWorkshop"
+version = "0.1.2"
+description = "A python wrapper for the Numworks workshop"
+authors = ["Evann DREUMONT <53308142+LeGmask@users.noreply.github.com>", "cod313 <jeandellapasta@gmail.com>"]
 license = "MIT"
+readme = "readme.md"
+homepage = "https://workshop.numworks.com/"
+repository = "https://github.com/LeGmask/numWorkshop"
+keywords = ["Numworks", "workshop"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Internet",
+    "Topic :: Utilities"
+]
 
 [tool.poetry.dependencies]
 python = "^3.8"
