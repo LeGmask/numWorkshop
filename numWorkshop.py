@@ -48,7 +48,7 @@ class Workshop:
         }
 
         r = self.session.post(self.get_url("/users/sign_in"), data=payload)
-        soup = BeautifulSoup(r.text, "html.parser").find(["ul","li","a"],
+        soup = BeautifulSoup(r.text, "html.parser").find(["ul", "li", "a"],
                              class_="dropdown-menu animated-dropdown-sm")
         self.python = soup.find_all("a")[1].get("href")
 
