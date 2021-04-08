@@ -1,27 +1,42 @@
-import requests
-from bs4 import BeautifulSoup
+
 from dataclasses import dataclass
+import requests
+from typing import Dict, NoReturn
+
+from bs4 import BeautifulSoup
+
+
+class WorkshopError(Exception):
+
+    def __init__(self, error: str):
+        self.error = error
+
+    def __str__(self) -> str:
+        return self.error
+
 
 @dataclass
-class Script: 
-    """Class for numworks workshop python script"""
+class Script:
+    """Class for numworks workshop python script."""
     name: str
     description: str
     content: str
     public: bool
 
+
 class Workshop:
-    def __init__(self, email, password) -> None:
+
+    def __init__(self, email: str, password: str):
         self.session = requests.Session()
-        self.baseUrl = "workshop.numworks.com"
+        self.base_url = "workshop.numworks.com"
         user = {
             "email": email,
             "password": password
         }
         self.login(user)
 
-    def login(self, user):
-        login = self.session.get(self.getUrl("/users/sign_in"))
+    def login(self, user: Dict[str, str]) -> NoReturn:
+        login = self.session.get(self.get_url("/users/sign_in"))
         soup = BeautifulSoup(login.text, "html.parser")
         authenticity_token = soup.find("input").get("value")
 
@@ -32,14 +47,14 @@ class Workshop:
             "user[password]": user["password"],
         }
 
-        r = self.session.post(self.getUrl("/users/sign_in"), data=payload)
-        soup = BeautifulSoup(r.text, "html.parser").find(["ul","li","a"], class_="dropdown-menu animated-dropdown-sm")
+        r = self.session.post(self.get_url("/users/sign_in"), data=payload)
+        soup = BeautifulSoup(r.text, "html.parser").find(["ul","li","a"],
+                             class_="dropdown-menu animated-dropdown-sm")
         self.python = soup.find_all("a")[1].get("href")
-        
 
-    def createScript(self, script: Script):
+    def create_script(self, script: Script) -> NoReturn:
         # @todo : error if script allready exist...
-        r = self.session.get(self.getUrl(f"{self.python}/new"))
+        r = self.session.get(self.get_url(f"{self.python}/new"))
         soup = BeautifulSoup(r.text, "html.parser")
         authenticity_token = soup.find("input").get("value")
 
@@ -48,18 +63,16 @@ class Workshop:
             "commit": "Sauvegarder",
             "script[description]": script.description,
             "script[name]": f"{script.name.lower()}.py",
-            "script[public]": 1 if script.public else 0, 
+            "script[public]": int(script.public),
             "script[text_area_content]": script.content,
         }
-        
-        r = self.session.post(self.getUrl(f"{self.python}"), data=payload)
-        soup = BeautifulSoup(r.text, "html.parser")
-        self.raiseErrors(soup.find(id="error_explanation"))
-            
-        
 
-    def editScript(self, script: Script, name=None):
-        r = self.session.get(self.getUrl(f"{self.python}/{script.name}/edit"))
+        r = self.session.post(self.get_url(f"{self.python}"), data=payload)
+        soup = BeautifulSoup(r.text, "html.parser")
+        self.raise_errors(soup.find(id="error_explanation"))
+
+    def edit_script(self, script: Script, name=None) -> NoReturn:
+        r = self.session.get(self.get_url(f"{self.python}/{script.name}/edit"))
         soup = BeautifulSoup(r.text, "html.parser")
         authenticity_token = soup.find_all("input")[1].get("value")
 
@@ -69,56 +82,62 @@ class Workshop:
             "commit": "Sauvegarder",
             "script[description]": script.description,
             "script[name]": f"{name.lower()}.py" or f"{script.name.lower()}.py",
-            "script[public]": 1 if script.public else 0,
+            "script[public]": int(script.public),
             "script[text_area_content]": script.content,
         }
 
-        r = self.session.post(self.getUrl(f"{self.python}/{script.name}"), data=payload)
+        r = self.session.post(self.get_url(f"{self.python}/{script.name}"),
+                              data=payload)
         soup = BeautifulSoup(r.text, "html.parser")
-        self.raiseErrors(soup.find(id="error_explanation"))
+        self.raise_errors(soup.find(id="error_explanation"))
 
         script.name = name or script.name
-        # print(r.text)
 
-    def deleteScript(self, script: Script):
-        r = self.session.get(self.getUrl(f"{self.python}/{script.name}"))
+    def delete_script(self, script: Script) -> NoReturn:
+        r = self.session.get(self.get_url(f"{self.python}/{script.name}"))
 
         soup = BeautifulSoup(r.text, "html.parser")
-        authenticity_token = soup.find("meta", attrs={"name": "csrf-token"}).get("content")
+        authenticity_token = soup.find("meta",
+                                       attrs={"name": "csrf-token"}).get("content")
 
         payload = {
             "_method": "delete",
             "authenticity_token": authenticity_token,
         }
 
-        r = self.session.post(self.getUrl(f"{self.python}/{script.name}"), data=payload)
+        r = self.session.post(self.get_url(f"{self.python}/{script.name}"),
+                              data=payload)
         soup = BeautifulSoup(r.text, "html.parser")
-        self.raiseErrors(soup.find(id="error_explanation"))
-    
-    def getScript(self, url) -> Script:
+        self.raise_errors(soup.find(id="error_explanation"))
+
+    def get_script(self, url: str) -> Script:
         r = self.session.get(f"{url}")
         soup = BeautifulSoup(r.text, "html.parser")
         send_to_calculator = soup.find("send-to-calculator")
 
-        scriptName = send_to_calculator.get("script-name").split(".")[0]
-        scriptContent = send_to_calculator.get("script-content")
+        script_name = send_to_calculator.get("script-name").split(".")[0]
+        script_content = send_to_calculator.get("script-content")
 
-        scriptDescription = soup.find(class_="text-justify").text.strip("\n")
+        script_description = soup.find(class_="text-justify").text.strip("\n")
+
         if url[37:].split("/")[0] != self.python.split("/")[2]:
-            scriptPublic = True
+            script_public = True
         else:
-            scriptPublic = bool(soup.find(class_="text-success"))
-            
-        return Script(scriptName, scriptDescription, scriptContent, scriptPublic)
+            script_public = bool(soup.find(class_="text-success"))
 
+        return Script(script_name,
+                      script_description,
+                      script_content,
+                      script_public)
 
-    def getUrl(self, url):
-        return f"https://{self.baseUrl}{url}"
-    
-    def raiseErrors(self, errors):
+    def get_url(self, url: str) -> str:
+        return f"https://{self.base_url}{url}"
+
+    def raise_errors(self, errors: Exception) -> NoReturn:
         if errors:
-            errors = [error.text for error in errors.find_all("li")]
+            errors = (error.text
+                          for error in errors.find_all("li"))
             for error in errors:
-                    raise Exception(error)
+                raise WorkshopError(error)
 
 
