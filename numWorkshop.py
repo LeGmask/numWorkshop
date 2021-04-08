@@ -135,9 +135,6 @@ class Workshop:
 
     def raise_errors(self, errors: Exception) -> NoReturn:
         if errors:
-            errors = (error.text
-                          for error in errors.find_all("li"))
+            errors = (error.text for error in errors.find_all("li"))
             for error in errors:
                 raise WorkshopError(error)
-
-
