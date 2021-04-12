@@ -1,7 +1,6 @@
 
-from dataclasses import dataclass
 import requests
-from typing import Dict, NoReturn
+from typing import Dict, NamedTuple, NoReturn
 
 from bs4 import BeautifulSoup
 
@@ -15,9 +14,8 @@ class WorkshopError(Exception):
         return self.error
 
 
-@dataclass
-class Script:
-    """Class for numworks workshop python script."""
+class Script(NamedTuple):
+    """Encapsulate a numworks workshop python script."""
     name: str
     description: str
     content: str
